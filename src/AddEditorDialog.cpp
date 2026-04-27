@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QDir>
+#include "ConfigManager.h"
 
 AddEditorDialog::AddEditorDialog(QWidget *parent) : QDialog(parent) {
     setWindowTitle("Add Unreal Editor");
@@ -72,6 +73,8 @@ void AddEditorDialog::onNameChanged(const QString &text) {
 void AddEditorDialog::addEditor() {
     QString name = nameLineEdit->text().trimmed();
     if (DesktopEntryWriter::write(name, selectedRootPath)) {
+        // Save to config as well so View Editors shows the entry immediately
+        ConfigManager::saveEntry({name, selectedRootPath});
         QMessageBox::information(this, "Success", "Desktop entry created successfully.");
         accept();
     } else {

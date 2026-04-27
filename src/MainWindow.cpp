@@ -19,8 +19,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     viewEditorsButton = new QPushButton("View Editors", this);
     connect(viewEditorsButton, &QPushButton::clicked, this, &MainWindow::showViewEditorsPage);
 
-    mainLayout->addWidget(addEditorButton, 0, Qt::AlignCenter);
+    // Place View Editors on top, Add Editor below, and make their sizes identical
+    QSize btnSize(240, 56);
+    viewEditorsButton->setFixedSize(btnSize);
+    addEditorButton->setFixedSize(btnSize);
+
     mainLayout->addWidget(viewEditorsButton, 0, Qt::AlignCenter);
+    mainLayout->addWidget(addEditorButton, 0, Qt::AlignCenter);
     mainLayout->setAlignment(Qt::AlignCenter);
 
     stackedWidget->addWidget(mainPage);

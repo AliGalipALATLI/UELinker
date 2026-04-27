@@ -17,7 +17,6 @@ private slots:
 
 private:
     EditorEntry m_entry;
-    QLabel* m_iconLabel;
     QLabel* m_nameLabel;
     QPushButton* m_deleteButton;
 };

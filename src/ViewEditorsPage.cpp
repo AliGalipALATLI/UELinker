@@ -4,6 +4,9 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QCoreApplication>
+#include <QPixmap>
+#include <QIcon>
 
 ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -11,9 +14,28 @@ ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
 
     // Back Button
     QPushButton* backButton = new QPushButton(this);
-    backButton->setIcon(QIcon(QPixmap("assets/AR.png")));
-    backButton->setFixedSize(40, 40);
-    backButton->setStyleSheet("border: none; background: transparent;");
+    // Try to load icon relative to application dir first, then fallback to assets/ path
+    QString appDir = QCoreApplication::applicationDirPath();
+    QPixmap pixmap;
+    bool iconLoaded = false;
+    if (pixmap.load(appDir + "/assets/AR.png")) {
+        backButton->setIcon(QIcon(pixmap));
+        iconLoaded = true;
+    } else if (pixmap.load("assets/AR.png")) {
+        backButton->setIcon(QIcon(pixmap));
+        iconLoaded = true;
+    }
+
+    backButton->setFixedSize(44, 44);
+    // Make icon / text clearly visible
+    if (iconLoaded) {
+        backButton->setIconSize(QSize(28, 28));
+        backButton->setStyleSheet("border: none; background: transparent; color: #ffffff; padding-left: 6px;");
+    } else {
+        // Fallback to a visible arrow text if icon not found
+        backButton->setText("\u2190");
+        backButton->setStyleSheet("color: #ffffff; font-size: 22px; font-weight: bold; border: none; background: transparent; padding-left: 6px;");
+    }
     connect(backButton, &QPushButton::clicked, this, &ViewEditorsPage::backRequested);
 
     QHBoxLayout* topLayout = new QHBoxLayout();
@@ -40,6 +62,7 @@ ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
     scrollWidget->setLayout(m_gridLayout);
     scrollArea->setWidget(scrollWidget);
 
+    // Keep main background black; scroll area will show cards on dark grey boxes
     mainLayout->addWidget(scrollArea);
 }
 

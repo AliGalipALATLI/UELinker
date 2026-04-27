@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QPixmap>
+#include <QCoreApplication>
+#include <QIcon>
 
 EditorCardWidget::EditorCardWidget(const EditorEntry& entry, QWidget* parent)
     : QWidget(parent), m_entry(entry) {
@@ -15,22 +17,38 @@ EditorCardWidget::EditorCardWidget(const EditorEntry& entry, QWidget* parent)
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(8, 8, 8, 8);
 
-    m_iconLabel = new QLabel(this);
-    m_iconLabel->setPixmap(QPixmap("assets/UE.png").scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    m_iconLabel->setFixedSize(32, 32);
+    QString appDir = QCoreApplication::applicationDirPath();
 
     m_nameLabel = new QLabel(entry.name, this);
-    m_nameLabel->setStyleSheet("color: #ffffff;");
+    m_nameLabel->setStyleSheet("color: #ffffff; padding-left: 8px;");
 
+    // Delete button inside the card (on the right)
     m_deleteButton = new QPushButton(this);
-    m_deleteButton->setIcon(QIcon(QPixmap("assets/TRA.png")));
-    m_deleteButton->setFixedSize(32, 32);
+    QPixmap delPix;
+    if (!delPix.load(appDir + "/assets/TRA.png")) {
+        delPix.load("assets/TRA.png");
+    }
+    if (!delPix.isNull()) {
+        m_deleteButton->setIcon(QIcon(delPix));
+        m_deleteButton->setIconSize(QSize(20, 20));
+    } else {
+        m_deleteButton->setText("Del"); // fallback text if icon not available
+    }
+    m_deleteButton->setFixedSize(36, 36);
     m_deleteButton->setCursor(Qt::PointingHandCursor);
-    m_deleteButton->setStyleSheet("border: none; background: transparent;");
+    m_deleteButton->setStyleSheet("border: none; background: transparent; color: #ffffff;");
 
-    layout->addWidget(m_iconLabel);
-    layout->addWidget(m_nameLabel, 1); // Expand to fill available space
-    layout->addWidget(m_deleteButton);
+    // Layout: name label expands, delete button at right inside the same card
+    layout->addWidget(m_nameLabel, 1);
+    layout->addSpacing(8);
+    layout->addWidget(m_deleteButton, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // Make the card a bit wider so delete button is clearly inside the card
+    setMinimumWidth(220);
+
+    // Card visual style: dark grey background with rounded corners
+    this->setStyleSheet("background: #2b2b2b; border: 1px solid #3a3a3a; border-radius: 8px;");
+    this->setContentsMargins(0,0,0,0);
 
     connect(m_deleteButton, &QPushButton::clicked, this, &EditorCardWidget::showDeleteMenu);
 }
@@ -41,7 +59,8 @@ void EditorCardWidget::showDeleteMenu() {
     QAction* deleteAppAction = menu.addAction("Delete App");
     QAction* deleteFilesAction = menu.addAction("Delete Files");
 
-    QAction* selectedAction = menu.exec(m_deleteButton->mapToGlobal(QPoint(0, m_deleteButton->height())));
+    // Use cursor position for menu placement to ensure it appears where the user clicked
+    QAction* selectedAction = menu.exec(QCursor::pos());
 
     if (selectedAction == deleteAppAction) {
         DesktopEntryWriter::remove(m_entry.name);

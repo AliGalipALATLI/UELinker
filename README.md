@@ -210,7 +210,7 @@ These files are stored in `~/.local/share/applications/` and are immediately pic
 
 ## Project Structure
 
-```
+``` 
 UELinker/
 ├── CMakeLists.txt
 ├── install.sh                 ← Arch/Manjaro one-click installer

@@ -131,13 +131,29 @@ void ConfigManager::saveEntry(const EditorEntry& entry) {
     bool found = false;
     for (int i = 0; i < entries.size(); ++i) {
         if (entries[i].name == entry.name) {
+            // Update all relevant fields so changes (including isFavorite)
+            // are persisted when toggled from the UI.
+            bool wasFavorite = entries[i].isFavorite;
             entries[i].path = entry.path;
+            entries[i].isFavorite = entry.isFavorite;
+            // If newly favorited, move to front. If unfavorited, move to end.
+            if (!wasFavorite && entry.isFavorite) {
+                EditorEntry tmp = entries.takeAt(i);
+                entries.insert(0, tmp);
+            } else if (wasFavorite && !entry.isFavorite) {
+                EditorEntry tmp = entries.takeAt(i);
+                entries.append(tmp);
+            }
             found = true;
             break;
         }
     }
     if (!found) {
-        entries.append(entry);
+        if (entry.isFavorite) {
+            entries.insert(0, entry);
+        } else {
+            entries.append(entry);
+        }
     }
     writeJson(entries);
 }

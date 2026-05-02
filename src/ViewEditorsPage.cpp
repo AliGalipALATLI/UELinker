@@ -82,13 +82,9 @@ void ViewEditorsPage::loadEditors() {
 
     QList<EditorEntry> entries = ConfigManager::loadEntries();
     
-    // Sort favorites to the top
-    std::sort(entries.begin(), entries.end(), [](const EditorEntry& a, const EditorEntry& b) {
-        if (a.isFavorite != b.isFavorite) {
-            return a.isFavorite > b.isFavorite;
-        }
-        return a.name < b.name;
-    });
+    // Entries are displayed in the order stored in the config file.
+    // Favorites are moved to the front when they are toggled, so we
+    // rely on the persisted ordering instead of re-sorting here.
 
     int row = 0;
     int col = 0;

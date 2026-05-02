@@ -15,6 +15,21 @@ echo -e "${BLUE}=======================================${NC}"
 echo -e "${BLUE}  Linux Unreal Engine Desktop Linker   ${NC}"
 echo -e "${BLUE}=======================================${NC}"
 
+# ── Step 0: Auto-clone from GitHub if not already cloned ─────
+if [ "$(basename "$PWD")" != "UELinker" ]; then
+    echo -e "\n${YELLOW}[0/4] Cloning UELinker from GitHub...${NC}"
+    if command -v git &> /dev/null; then
+        git clone https://github.com/AliGalipALATLI/UELinker.git
+        cd UELinker
+        echo -e "${GREEN}    ✓ Cloned successfully. Restarting installer...${NC}"
+        # Restart the script from the new directory
+        exec ./install.sh
+    else
+        echo -e "${RED}[!] git not found. Please clone the repository manually and try again.${NC}"
+        exit 1
+    fi
+fi
+
 # ── Step 1: Dependencies ──────────────────────────────────────
 echo -e "\n${YELLOW}[1/4] Checking and installing required dependencies...${NC}"
 if command -v yay &> /dev/null; then

@@ -34,13 +34,13 @@ fi
 echo -e "\n${YELLOW}[1/4] Checking and installing required dependencies...${NC}"
 if command -v yay &> /dev/null; then
     echo -e "      Package manager: ${GREEN}yay${NC} (AUR)"
-    yay -S --needed --noconfirm qt6-base cmake make gcc
+    yay -S --needed --noconfirm qt6-base qt6-imageformats cmake make gcc
 elif command -v pacman &> /dev/null; then
     echo -e "      Package manager: ${GREEN}pacman${NC}"
-    sudo pacman -S --needed --noconfirm qt6-base cmake make gcc
+    sudo pacman -S --needed --noconfirm qt6-base qt6-imageformats cmake make gcc
 else
     echo -e "${RED}[!] Neither yay nor pacman found.${NC}"
-    echo -e "    Please install the following packages manually: qt6-base cmake make gcc"
+    echo -e "    Please install the following packages manually: qt6-base qt6-imageformats cmake make gcc"
     exit 1
 fi
 echo -e "${GREEN}    ✓ Dependencies are ready.${NC}"
@@ -64,6 +64,7 @@ echo -e "${GREEN}    ✓ Build successful.${NC}"
 # ── Step 4: Install ───────────────────────────────────────────
 echo -e "\n${YELLOW}[4/4] Installing UELinker to your system...${NC}"
 mkdir -p ~/.local/bin
+mkdir -p ~/.local/share/UELinker
 
 # Support both possible binary names
 if [ -f "build/UELinker" ]; then
@@ -75,6 +76,11 @@ else
     exit 1
 fi
 chmod +x ~/.local/bin/UELinker
+
+# Copy assets and assistant data to local share
+echo -e "      Copying application data..."
+cp -r assets ~/.local/share/UELinker/
+cp -r assistant ~/.local/share/UELinker/
 
 # Create .desktop entry so UELinker appears in app menus
 mkdir -p ~/.local/share/applications
@@ -90,6 +96,7 @@ Categories=Development;Utility;
 EOF
 
 echo -e "${GREEN}    ✓ UELinker installed to ~/.local/bin/UELinker${NC}"
+echo -e "${GREEN}    ✓ Application data copied to ~/.local/share/UELinker/${NC}"
 echo -e "${GREEN}    ✓ Desktop entry created at ~/.local/share/applications/UELinker.desktop${NC}"
 
 # ── Done! ─────────────────────────────────────────────────────

@@ -8,21 +8,25 @@
 #include <QPixmap>
 #include <QIcon>
 #include <algorithm>
+#include <QSplitter>
+#include "NodeManager.h"
 
 ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    QHBoxLayout* outer = new QHBoxLayout(this);
+    outer->setContentsMargins(0,0,0,0);
+
+    // Sidebar is now handled by MainWindow/mainPage. This view only shows grid of editors.
+
+    QVBoxLayout* mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // Back Button
     QPushButton* backButton = new QPushButton(this);
-    // Try to load icon relative to application dir first, then fallback to assets/ path
-    QString appDir = QCoreApplication::applicationDirPath();
+    // Try to load icon using robust data path helper
     QPixmap pixmap;
     bool iconLoaded = false;
-    if (pixmap.load(appDir + "/assets/AR.png")) {
-        backButton->setIcon(QIcon(pixmap));
-        iconLoaded = true;
-    } else if (pixmap.load("assets/AR.png")) {
+    QString iconPath = NodeManager::getDataPath("assets/AR.png");
+    if (pixmap.load(iconPath)) {
         backButton->setIcon(QIcon(pixmap));
         iconLoaded = true;
     }
@@ -45,8 +49,8 @@ ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
     topLayout->setContentsMargins(8, 8, 8, 8);
     mainLayout->addLayout(topLayout);
 
-    // Scroll Area
-    QScrollArea* scrollArea = new QScrollArea(this);
+    // Scroll Area (main content)
+    QScrollArea* scrollArea = new QScrollArea();
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
 
@@ -65,6 +69,10 @@ ViewEditorsPage::ViewEditorsPage(QWidget* parent) : QWidget(parent) {
 
     // Keep main background black; scroll area will show cards on dark grey boxes
     mainLayout->addWidget(scrollArea);
+
+    outer->addLayout(mainLayout);
+
+    // Nodes directory relative to application dir / repo (kept for future use)
 }
 
 void ViewEditorsPage::clearLayout(QLayout* layout) {
@@ -109,3 +117,8 @@ void ViewEditorsPage::loadEditors() {
     QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
     m_gridLayout->addItem(spacer, row + 1, 0, 1, 5);
 }
+
+// Simple fuzzy score wrapper (placeholder)
+// legacy placeholder removed
+
+// search functionality moved into NodeManager::filterNodes

@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLayout>
+// No search UI in this view; sidebar is handled by MainWindow
 
 class ViewEditorsPage : public QWidget {
     Q_OBJECT

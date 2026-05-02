@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "AddEditorDialog.h"
+#include "NodeDetailDialog.h"
 #include <QVBoxLayout>
 #include <QCoreApplication>
 
@@ -11,12 +12,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   stackedWidget = new QStackedWidget(this);
   setCentralWidget(stackedWidget);
 
-  // Page 0: Main Page
+  // Page 0: Main Page with search sidebar
   mainPage = new QWidget();
-  QVBoxLayout *mainLayout = new QVBoxLayout(mainPage);
-  mainLayout->setContentsMargins(16, 16, 16, 16);
-  
-  mainLayout->addStretch(); // Spacer above buttons
+  QHBoxLayout *pageLayout = new QHBoxLayout(mainPage);
+  pageLayout->setContentsMargins(16,16,16,16);
+
+  // Left: search sidebar (fixed)
+  QWidget *left = new QWidget(mainPage);
+  left->setFixedWidth(340);
+  QVBoxLayout *leftLayout = new QVBoxLayout(left);
+  leftLayout->setContentsMargins(8,8,8,8);
+
+  QLineEdit *searchEdit = new QLineEdit(left);
+  searchEdit->setPlaceholderText("Search nodes...");
+  leftLayout->addWidget(searchEdit);
+
+  QListView *resultsView = new QListView(left);
+  QStandardItemModel *resultsModel = new QStandardItemModel(this);
+  resultsView->setModel(resultsModel);
+  leftLayout->addWidget(resultsView);
+
+  pageLayout->addWidget(left);
+
+  // Right: main content (buttons centered)
+  QWidget *right = new QWidget(mainPage);
+  QVBoxLayout *rightLayout = new QVBoxLayout(right);
+  rightLayout->addStretch();
 
   viewEditorsButton = new QPushButton("View Editors", this);
   connect(viewEditorsButton, &QPushButton::clicked, this,
@@ -26,19 +47,49 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   connect(addEditorButton, &QPushButton::clicked, this,
           &MainWindow::openAddEditorDialog);
 
-  // Place buttons in the layout and make their sizes identical
   QSize btnSize(240, 56);
   viewEditorsButton->setFixedSize(btnSize);
   addEditorButton->setFixedSize(btnSize);
 
-  mainLayout->addWidget(viewEditorsButton, 0, Qt::AlignCenter);
-  mainLayout->addSpacing(12);
-  mainLayout->addWidget(addEditorButton, 0, Qt::AlignCenter);
+  rightLayout->addWidget(viewEditorsButton, 0, Qt::AlignCenter);
+  rightLayout->addSpacing(12);
+  rightLayout->addWidget(addEditorButton, 0, Qt::AlignCenter);
+  rightLayout->addStretch();
 
-  mainLayout->addStretch(); // Spacer below buttons
-  mainLayout->setAlignment(Qt::AlignCenter);
+  pageLayout->addWidget(right);
 
   stackedWidget->addWidget(mainPage);
+
+  // Load nodes from repo assistant/nodes (checking multiple locations)
+  QString nodesDir = NodeManager::getNodesPath();
+  QVector<NodeEntry> nodes = NodeManager::loadNodes(nodesDir);
+
+  // Wire search
+  connect(searchEdit, &QLineEdit::textChanged, this, [=](const QString &text){
+      QVector<NodeEntry> res = NodeManager::filterNodes(nodes, text, 50);
+      resultsModel->clear();
+      for (const auto &n : res) {
+          QStandardItem *it = new QStandardItem(n.name);
+          it->setData(n.id, Qt::UserRole);
+          it->setToolTip(n.description);
+          resultsModel->appendRow(it);
+      }
+  });
+
+  // Click opens detail dialog
+  connect(resultsView, &QListView::clicked, this, [=](const QModelIndex &idx){
+      if (!idx.isValid()) return;
+      QString id = idx.data(Qt::UserRole).toString();
+      for (const auto &n : nodes) {
+          if (n.id == id) {
+              // lazy-include to avoid header ordering problems
+              NodeDetailDialog *dlg = new NodeDetailDialog(n, this);
+              dlg->exec();
+              delete dlg;
+              break;
+          }
+      }
+  });
 
   // Page 1: View Editors Page
   viewEditorsPage = new ViewEditorsPage(this);

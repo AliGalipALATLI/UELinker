@@ -1,0 +1,5 @@
+{
+  "name": "Break Vector",
+  "keywords": ["break vector", "decompose", "x", "y", "z"],
+  "description": "Decomposes a vector into its X, Y and Z components. Useful to extract coordinates."
+}

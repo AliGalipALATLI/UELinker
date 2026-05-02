@@ -1,0 +1,5 @@
+{
+  "name": "Event BeginPlay",
+  "keywords": ["begin play", "event", "start", "init"],
+  "description": "Called when the game starts or when the actor is spawned. Use to initialize logic."
+}

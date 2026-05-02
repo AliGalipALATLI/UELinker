@@ -16,9 +16,12 @@ add_executable(UnrealLauncher
     src/ConfigManager.cpp
     src/ViewEditorsPage.cpp
     src/EditorCardWidget.cpp
+    src/NodeManager.cpp
+    src/NodeDetailDialog.cpp
 )
 
 target_link_libraries(UnrealLauncher PRIVATE Qt6::Widgets Qt6::Core)
 
-# Copy runtime assets into the build directory so the executable can load them
+# Copy runtime assets and assistant data into the build directory
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY assistant DESTINATION ${CMAKE_BINARY_DIR})

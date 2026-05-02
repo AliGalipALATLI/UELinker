@@ -4,6 +4,7 @@
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMessageBox>
+#include <QLineEdit>
 #include <QDir>
 #include <QPixmap>
 #include <QCoreApplication>
@@ -28,6 +29,15 @@ EditorCardWidget::EditorCardWidget(const EditorEntry& entry, QWidget* parent)
     contentLayout->setContentsMargins(12, 8, 12, 8);
 
     m_nameLabel = new QLabel(entry.name, content);
+    // Allow clicking the label to start inline edit
+    m_nameLabel->setCursor(Qt::IBeamCursor);
+    m_nameLabel->installEventFilter(this);
+
+    // Create name editor but keep it hidden until editing
+    m_nameEdit = new QLineEdit(entry.name, content);
+    m_nameEdit->setVisible(false);
+    m_nameEdit->setStyleSheet("background: #2d2d2d; color: #ffffff; border: 1px solid #444; padding: 4px;");
+    connect(m_nameEdit, &QLineEdit::editingFinished, this, &EditorCardWidget::commitNameEdit);
     m_nameLabel->setStyleSheet("color: #ffffff; padding-left: 8px;");
 
     // Delete button inside the card (on the right)
@@ -68,6 +78,7 @@ EditorCardWidget::EditorCardWidget(const EditorEntry& entry, QWidget* parent)
     m_deleteButton->setStyleSheet("border: none; background: transparent; color: #ffffff;");
 
     contentLayout->addWidget(m_nameLabel, 1);
+    contentLayout->addWidget(m_nameEdit, 1);
 
     // Favorite button
     m_favoriteButton = new QToolButton(content);
@@ -201,6 +212,56 @@ bool EditorCardWidget::eventFilter(QObject* watched, QEvent* event) {
         } else if (event->type() == QEvent::Leave) {
             updateFavoriteIcon(false);
         }
+    } else if (watched == m_nameLabel) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            // Start inline editing
+            startEditingName();
+            return true;
+        }
     }
     return false;
+}
+
+void EditorCardWidget::startEditingName() {
+    if (!m_nameEdit) return;
+    m_nameEdit->setText(m_entry.name);
+    m_nameLabel->setVisible(false);
+    m_nameEdit->setVisible(true);
+    m_nameEdit->setFocus(Qt::FocusReason::MouseFocusReason);
+    m_nameEdit->selectAll();
+}
+
+void EditorCardWidget::commitNameEdit() {
+    if (!m_nameEdit) return;
+    QString newName = m_nameEdit->text().trimmed();
+    QString oldName = m_entry.name;
+    // Hide editor and show label regardless; we'll revert label if needed
+    m_nameEdit->setVisible(false);
+    m_nameLabel->setVisible(true);
+
+    if (newName.isEmpty() || newName == oldName) {
+        // No changes
+        m_nameLabel->setText(oldName);
+        return;
+    }
+
+    // Attempt to write new .desktop entry for the new name. If write fails, warn and revert.
+    bool ok = DesktopEntryWriter::write(newName, m_entry.path);
+    if (!ok) {
+        QMessageBox::warning(this, "Error", "Failed to create desktop entry for the new name. Name not changed.");
+        m_nameLabel->setText(oldName);
+        return;
+    }
+
+    // Remove old desktop entry
+    DesktopEntryWriter::remove(oldName);
+
+    // Update internal model and persist via ConfigManager
+    EditorEntry newEntry = m_entry;
+    newEntry.name = newName;
+    ConfigManager::renameEntry(oldName, newEntry);
+
+    m_entry = newEntry;
+    m_nameLabel->setText(m_entry.name);
+    emit nameChanged(oldName, m_entry);
 }

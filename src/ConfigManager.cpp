@@ -152,3 +152,18 @@ void ConfigManager::removeEntry(const QString& name) {
     }
     writeJson(entries);
 }
+
+void ConfigManager::renameEntry(const QString& oldName, const EditorEntry& newEntry) {
+    QList<EditorEntry> entries = loadEntries();
+    for (int i = 0; i < entries.size(); ++i) {
+        if (entries[i].name == oldName) {
+            // Replace entry at the same position to preserve ordering
+            entries[i] = newEntry;
+            writeJson(entries);
+            return;
+        }
+    }
+    // If not found, append as new
+    entries.append(newEntry);
+    writeJson(entries);
+}

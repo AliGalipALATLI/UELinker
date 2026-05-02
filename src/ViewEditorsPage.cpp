@@ -99,6 +99,7 @@ void ViewEditorsPage::loadEditors() {
         EditorCardWidget* card = new EditorCardWidget(entry, gridParent);
         connect(card, &EditorCardWidget::deletionRequested, this, &ViewEditorsPage::loadEditors);
         connect(card, &EditorCardWidget::favoriteChanged, this, &ViewEditorsPage::loadEditors);
+        connect(card, &EditorCardWidget::nameChanged, this, &ViewEditorsPage::loadEditors);
         
         m_gridLayout->addWidget(card, row, col);
         col++;

@@ -102,7 +102,7 @@ EOF
 ```bash
 sudo dnf install -y qt6-qtbase-devel cmake make gcc-c++
 
-git clone https://github.com/yourusername/UELinker.git
+git clone https://github.com/AliGalipALATLI/UELinker.git
 cd UELinker
 
     mkdir -p ~/.local/share/icons
@@ -135,7 +135,7 @@ EOF
 ```bash
 sudo zypper install -y cmake make gcc-c++ libqt6-qtbase-devel
 
-git clone https://github.com/yourusername/UELinker.git
+git clone https://github.com/AliGalipALATLI/UELinker.git
 cd UELinker
 
     mkdir -p ~/.local/share/icons

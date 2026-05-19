@@ -1,5 +1,0 @@
-{
-  "name": "Branch",
-  "keywords": ["branch", "condition", "if", "flow"],
-  "description": "Branches execution depending on a boolean condition. Use to split logic paths."
-}

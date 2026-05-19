@@ -1,5 +1,0 @@
-{
-  "name": "Event Tick",
-  "keywords": ["tick", "frame", "update", "every frame"],
-  "description": "Called every frame. Use for time-based updates. Be mindful of performance."
-}

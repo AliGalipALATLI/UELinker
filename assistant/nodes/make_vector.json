@@ -1,0 +1,5 @@
+{
+  "name": "Make Vector",
+  "keywords": ["make vector", "vector", "construct", "3d"],
+  "description": "Constructs a vector from X, Y, Z float components. Useful for positions and directions."
+}
